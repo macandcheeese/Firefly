@@ -93,6 +93,8 @@ init_db()
 #         Firefly Reset / Reinstall
 #####################################################
 
+# TODO: Finish changing all old Device DB actions over to SQLite
+
 
 @app.route('/reinstall_devices')
 def web_reinstall_devices(request):
