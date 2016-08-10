@@ -229,7 +229,7 @@ def test_install(request):
         d['status'] = {}
         deviceDB.insert(d)
 
-        myDevice = DeviceDB(ff_id=device.get('id'), ffObject=dObj, config=device, status={})
+        myDevice = DeviceDB(ff_id=device.get('id'), ffObject=dObj, config=device, last_command_source=None, status={})
         ff_db.add(myDevice)
         ff_db.commit()
 
