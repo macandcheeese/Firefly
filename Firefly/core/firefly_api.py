@@ -2,7 +2,7 @@
 # @Author: Zachary Priddy
 # @Date:   2016-04-11 08:56:32
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-08-09 17:20:30
+# @Last Modified time: 2016-08-09 17:27:29
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -213,6 +213,9 @@ def test_install(request):
         d['config'] = device
         d['status'] = {}
         deviceDB.insert(d)
+
+        myDevice = DeviceDB(id=device.get('id'), ffObject=pickle.dumps(dObj), config=device, status={})
+        session.add(myDevice)
 
 
 def install_child_device(deviceID, ffObject, config={}, status={}):
@@ -646,8 +649,12 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-engine = create_engine('sqlite:///firefly.db', echo=True)
+engine = create_engine('sqlite:///firefly.sqlite', echo=True)
 Base = declarative_base()
+
+# Make the session
+Session = sessionmaker(bind=engine)
+session = Session()
 
 class DeviceDB(Base):
   __tablename__ = 'devices'
