@@ -2,11 +2,6 @@
 # @Author: Zachary Priddy
 # @Date:   2016-04-11 08:56:32
 # @Last Modified by:   Zachary Priddy
-<<<<<<< HEAD
-# @Last Modified time: 2016-08-09 18:16:05
-=======
-# @Last Modified time: 2016-08-09 17:40:08
->>>>>>> bcec8102afee9b66e7891297080c93efc3cb4733
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
