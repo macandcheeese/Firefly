@@ -102,7 +102,7 @@ def web_reinstall_devices(request):
 
 def reinstall_devices():
   try:
-    deleted = ff_db.query(DeviceDB).all().delete()
+    deleted = ff_db.delete(DeviceDB)
     logging.CRITICAL(str(deleted) + ' Devices Deleted')
   except Exception as err:
     return "Error deleting devices. See log for details. ERROR MESSAGE: " + str(err)
