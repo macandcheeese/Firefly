@@ -70,6 +70,22 @@ ffZwave = None
 routine_list = []
 device_list = {}
 
+
+
+#####################################################
+#         START OF CHANGE TO SQLite
+#####################################################
+
+from core.database.database import db_session as ff_db
+from core.database.models import *
+
+#####################################################
+#         END OF CHANGE TO SQLite
+#####################################################
+
+
+
+
 ## PATHS ##
 @app.route('/')
 def pg_root(request):
@@ -214,8 +230,8 @@ def test_install(request):
         deviceDB.insert(d)
 
         myDevice = DeviceDB(id=device.get('id'), ffObject=dObj, config=device, status={})
-        session.add(myDevice)
-        session.commit()
+        ff_db.add(myDevice)
+        ff_db.commit()
 
 
 def install_child_device(deviceID, ffObject, config={}, status={}):
@@ -616,68 +632,6 @@ def make_response(output_speech, card_content, output_type="PlainText", card_tit
 #####################################################
 
 
-
-#####################################################
-#         START OF CHANGE TO SQLite
-#####################################################
-
-'''
-@app.route('/testInstall')
-def test_install(request):
-  global ffZwave
-  deviceDB.remove({})
-  with open('config/devices.json') as devices:
-    allDevices = json.load(devices)
-    for name, device in allDevices.iteritems():
-      if device.get('module') != "ffZwave":
-        package_full_path = device.get('type') + 's.' + device.get('package') + '.' + device.get('module')
-        package = __import__(package_full_path, globals={}, locals={}, fromlist=[device.get('package')], level=-1)
-        reload(modules[package_full_path])
-        dObj = package.Device(device.get('id'), device)
-        d = {}
-        d['id'] = device.get('id')
-        d['ffObject'] = pickle.dumps(dObj)
-        d['config'] = device
-        d['status'] = {}
-        deviceDB.insert(d)
-'''
-
-# TODO: Change this to just the iomports we need
-import sqlalchemy
-
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-
-engine = create_engine('sqlite:///firefly.sqlite', echo=True)
-Base = declarative_base()
-
-# Make the session
-Session = sessionmaker(bind=engine)
-session = Session()
-
-
-
-class DeviceDB(Base):
-  __tablename__ = 'devices'
-
-  id = Column(String, primary_key=True)
-  ffObject = Column(PickleType)
-  config = Column(PickleType)
-  status = Column(PickleType)
-
-  created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False, server_default=text('0'))
-  updated_on = Column(TIMESTAMP, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow, server_default=text('0'))
-
-# Make all tables
-Base.metadata.create_all(engine)
-
-
-
-
-#####################################################
-#         END OF CHANGE TO SQLite
-#####################################################
 
 
 
