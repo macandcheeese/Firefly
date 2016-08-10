@@ -2,7 +2,7 @@
 # @Author: Zachary Priddy
 # @Date:   2016-04-11 08:56:32
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-08-09 17:31:51
+# @Last Modified time: 2016-08-09 17:35:17
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -656,6 +656,9 @@ Base = declarative_base()
 # Make the session
 Session = sessionmaker(bind=engine)
 session = Session()
+
+# Make all tables
+Base.metadata.create_all(engine)
 
 class DeviceDB(Base):
   __tablename__ = 'devices'
