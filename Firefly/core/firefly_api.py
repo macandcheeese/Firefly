@@ -2,7 +2,7 @@
 # @Author: Zachary Priddy
 # @Date:   2016-04-11 08:56:32
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-08-09 17:35:17
+# @Last Modified time: 2016-08-09 17:40:08
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -214,7 +214,7 @@ def test_install(request):
         d['status'] = {}
         deviceDB.insert(d)
 
-        myDevice = DeviceDB(id=device.get('id'), ffObject=pickle.dumps(dObj), config=device, status={})
+        myDevice = DeviceDB(id=device.get('id'), ffObject=dObj, config=device, status={})
         session.add(myDevice)
         session.commit()
 
