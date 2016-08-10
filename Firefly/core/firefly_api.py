@@ -89,6 +89,71 @@ init_db()
 
 
 
+#####################################################
+#         Firefly Reset / Reinstall
+#####################################################
+
+
+@app.route('/reinstall_devices')
+def web_reinstall_devices(request):
+  return reinstall_devices()
+
+# TODO: This may be better in database module
+
+def reinstall_devices():
+  try:
+    deleted = DeviceDB.query.delete()
+    logging.CRITICAL(str(deleted) + ' Devices Deleted')
+  except:
+    return "Error deleting devices. See log for details."
+
+  try:
+    with open('config/devices.json') as devices:
+      allDevices = json.load(devices)
+      for name, device in allDevices.iteritems():
+        logging.INFO('Installing Device: ' + str(name))
+        if device.get('module') != "ffZwave":
+          package_full_path = device.get('type') + 's.' + device.get('package') + '.' + device.get('module')
+          package = __import__(package_full_path, globals={}, locals={}, fromlist=[device.get('package')], level=-1)
+          reload(modules[package_full_path])
+          dObj = package.Device(device.get('id'), device)
+          newDevice = DeviceDB(ff_id=device.get('id'), ffObject=dObj, config=device, last_command_source='Deivce Installer', status={})
+          ff_db.add(newDevice)
+          ff_db.commit()
+  except:
+    return "Error installing devices. See log for details."
+
+  return "Installation Successful."
+
+def install_child_device(deviceID, ffObject, config={}, status={}):
+  '''
+  This installes a child device into the device database
+  '''
+  logging.debug("Installing Child Device")
+  newDevice = DeviceDB(ff_id=deviceID, ffObject=ffObject, config=config, last_command_source='Deivce Installer', status=status)
+  ff_db.add(newDevice)
+  ff_db.commit()
+
+
+# OLD install_child_device
+'''
+def install_child_device(deviceID, ffObject, config={}, status={}):
+  logging.debug("Installing Child Device")
+  d = {}
+  d['id'] = deviceID
+  d['ffObject'] = pickle.dumps(ffObject)
+  d['config'] = config
+  d['status'] = status
+  deviceDB.insert(d)
+'''
+
+
+#####################################################
+#         END OF Firefly Reset / Reinstall
+#####################################################
+
+
+
 
 ## PATHS ##
 @app.route('/')
@@ -238,14 +303,7 @@ def test_install(request):
         ff_db.commit()
 
 
-def install_child_device(deviceID, ffObject, config={}, status={}):
-  logging.debug("Installing Child Device")
-  d = {}
-  d['id'] = deviceID
-  d['ffObject'] = pickle.dumps(ffObject)
-  d['config'] = config
-  d['status'] = status
-  deviceDB.insert(d)
+
       
 
 def send_event(event):
