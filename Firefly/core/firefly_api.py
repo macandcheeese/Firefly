@@ -2,7 +2,7 @@
 # @Author: Zachary Priddy
 # @Date:   2016-04-11 08:56:32
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-08-09 17:19:24
+# @Last Modified time: 2016-08-09 17:20:30
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -649,7 +649,7 @@ from sqlalchemy.orm import sessionmaker
 engine = create_engine('sqlite:///firefly.db', echo=True)
 Base = declarative_base()
 
-class DeviceDB(base):
+class DeviceDB(Base):
   __tablename__ = 'devices'
 
   id = Column(String, primary_key=True)
