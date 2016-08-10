@@ -104,8 +104,8 @@ def reinstall_devices():
   try:
     deleted = DeviceDB.query.delete()
     logging.CRITICAL(str(deleted) + ' Devices Deleted')
-  except:
-    return "Error deleting devices. See log for details."
+  except ObjectDeletedError as err:
+    return "Error deleting devices. See log for details." + err.msg
 
   try:
     with open('config/devices.json') as devices:
