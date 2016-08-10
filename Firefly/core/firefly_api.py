@@ -102,10 +102,10 @@ def web_reinstall_devices(request):
 
 def reinstall_devices():
   try:
-    deleted = DeviceDB.query.delete()
+    deleted = ff_db.query(DeviceDB).delete()
     logging.CRITICAL(str(deleted) + ' Devices Deleted')
   except Exception as err:
-    return "Error deleting devices. See log for details." + str(err)
+    return "Error deleting devices. See log for details. ERROR MESSAGE: " + str(err)
 
   try:
     with open('config/devices.json') as devices:
@@ -120,8 +120,8 @@ def reinstall_devices():
           newDevice = DeviceDB(ff_id=device.get('id'), ffObject=dObj, config=device, last_command_source='Deivce Installer', status={})
           ff_db.add(newDevice)
           ff_db.commit()
-  except:
-    return "Error installing devices. See log for details."
+  except Exception as err:
+    return "Error installing devices. See log for details. ERROR MESSAGE: " + str(err)
 
   return "Installation Successful."
 
