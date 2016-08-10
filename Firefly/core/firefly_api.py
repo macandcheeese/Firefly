@@ -2,7 +2,7 @@
 # @Author: Zachary Priddy
 # @Date:   2016-04-11 08:56:32
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-07-28 22:28:42
+# @Last Modified time: 2016-08-09 17:06:36
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -611,6 +611,62 @@ def make_response(output_speech, card_content, output_type="PlainText", card_tit
 #####################################################
 #         END ECHO API
 #####################################################
+
+
+
+#####################################################
+#         START OF CHANGE TO SQLite
+#####################################################
+
+'''
+@app.route('/testInstall')
+def test_install(request):
+  global ffZwave
+  deviceDB.remove({})
+  with open('config/devices.json') as devices:
+    allDevices = json.load(devices)
+    for name, device in allDevices.iteritems():
+      if device.get('module') != "ffZwave":
+        package_full_path = device.get('type') + 's.' + device.get('package') + '.' + device.get('module')
+        package = __import__(package_full_path, globals={}, locals={}, fromlist=[device.get('package')], level=-1)
+        reload(modules[package_full_path])
+        dObj = package.Device(device.get('id'), device)
+        d = {}
+        d['id'] = device.get('id')
+        d['ffObject'] = pickle.dumps(dObj)
+        d['config'] = device
+        d['status'] = {}
+        deviceDB.insert(d)
+'''
+
+# TODO: Change this to just the iomports we need
+import sqlalchemy
+
+from sqlalchemy import *
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+engine = create_engine('sqlite:///firefly.db', echo=True)
+
+class DeviceDB(base):
+  __tablename__ = 'devices'
+
+  id = Column(String, primary_key=True)
+  ffObject = Column(PickleType)
+  config = Column(PickleType)
+  status = Column(PickleType)
+
+
+
+
+#####################################################
+#         END OF CHANGE TO SQLite
+#####################################################
+
+
+
+
+
 
 def get_routines_list():
   global routine_list
