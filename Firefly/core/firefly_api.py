@@ -103,25 +103,25 @@ def web_reinstall_devices(request):
 def reinstall_devices():
   try:
     deleted = ff_db.query(DeviceDB).delete()
-    #logging.CRITICAL(str(deleted) + ' Devices Deleted')
+    logging.CRITICAL(str(deleted) + ' Devices Deleted')
   except Exception as err:
     return "Error deleting devices. See log for details. ERROR MESSAGE: " + str(err)
 
-  try:
-    with open('config/devices.json') as devices:
-      allDevices = json.load(devices)
-      for name, device in allDevices.iteritems():
-        logging.INFO('Installing Device: ' + str(name))
-        if device.get('module') != "ffZwave":
-          package_full_path = device.get('type') + 's.' + device.get('package') + '.' + device.get('module')
-          package = __import__(package_full_path, globals={}, locals={}, fromlist=[device.get('package')], level=-1)
-          reload(modules[package_full_path])
-          dObj = package.Device(device.get('id'), device)
-          newDevice = DeviceDB(ff_id=device.get('id'), ffObject=dObj, config=device, last_command_source='Deivce Installer', status={})
-          ff_db.add(newDevice)
-          ff_db.commit()
-  except Exception as err:
-    return "Error installing devices. See log for details. ERROR MESSAGE: " + str(err)
+  #try:
+  with open('config/devices.json') as devices:
+    allDevices = json.load(devices)
+    for name, device in allDevices.iteritems():
+      logging.INFO('Installing Device: ' + str(name))
+      if device.get('module') != "ffZwave":
+        package_full_path = device.get('type') + 's.' + device.get('package') + '.' + device.get('module')
+        package = __import__(package_full_path, globals={}, locals={}, fromlist=[device.get('package')], level=-1)
+        reload(modules[package_full_path])
+        dObj = package.Device(device.get('id'), device)
+        newDevice = DeviceDB(ff_id=device.get('id'), ffObject=dObj, config=device, last_command_source='Deivce Installer', status={})
+        ff_db.add(newDevice)
+        ff_db.commit()
+  #except Exception as err:
+  #  return "Error installing devices. See log for details. ERROR MESSAGE: " + str(err)
 
   return "Installation Successful."
 
