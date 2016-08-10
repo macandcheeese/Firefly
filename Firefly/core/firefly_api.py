@@ -77,7 +77,11 @@ device_list = {}
 #####################################################
 
 from core.database.database import db_session as ff_db
+from core.database.database import init_db
 from core.database.models import *
+
+# Start the SQLiteDatabase
+init_db()
 
 #####################################################
 #         END OF CHANGE TO SQLite
