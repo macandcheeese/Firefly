@@ -2,7 +2,7 @@
 # @Author: Zachary Priddy
 # @Date:   2016-04-11 08:56:32
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-08-09 17:27:29
+# @Last Modified time: 2016-08-09 17:31:51
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -216,6 +216,7 @@ def test_install(request):
 
         myDevice = DeviceDB(id=device.get('id'), ffObject=pickle.dumps(dObj), config=device, status={})
         session.add(myDevice)
+        session.commit()
 
 
 def install_child_device(deviceID, ffObject, config={}, status={}):
