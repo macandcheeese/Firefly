@@ -2,7 +2,11 @@
 # @Author: Zachary Priddy
 # @Date:   2016-04-11 08:56:32
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-08-09 17:44:41
+<<<<<<< HEAD
+# @Last Modified time: 2016-08-09 18:16:05
+=======
+# @Last Modified time: 2016-08-09 17:40:08
+>>>>>>> bcec8102afee9b66e7891297080c93efc3cb4733
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -666,6 +670,9 @@ class DeviceDB(Base):
   ffObject = Column(PickleType)
   config = Column(PickleType)
   status = Column(PickleType)
+
+  created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False, server_default=text('0'))
+  updated_on = Column(TIMESTAMP, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow, server_default=text('0'))
 
 # Make all tables
 Base.metadata.create_all(engine)
