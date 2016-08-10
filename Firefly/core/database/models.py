@@ -2,7 +2,7 @@
 # @Author: Zachary Priddy
 # @Date:   2016-08-09 22:21:17
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-08-09 22:33:01
+# @Last Modified time: 2016-08-09 22:34:54
 
 
 #####################################################
@@ -26,7 +26,7 @@ class DeviceDB(Base):
   __tablename__ = 'devices'
 
   id = Column(Integer, primary_key=True)
-  ffid = Column(String)
+  ff_id = Column(String)
   ffObject = Column(PickleType)
   config = Column(PickleType)
   status = Column(PickleType)
@@ -43,7 +43,7 @@ class RoutineDB(Base):
   __tablename__ = 'routines'
 
   id = Column(Integer, primary_key=True)
-  ffid = Column(String)
+  ff_id = Column(String)
   listen = Column(PickleType)
   ffObject = Column(PickleType)
 
@@ -55,7 +55,7 @@ class AppDB(Base):
   __tablename__ = 'apps'
 
   id = Column(Integer, primary_key=True)
-  ffid = Column(String)
+  ff_id = Column(String)
   name = Column(String)
   listen = Column(PickleType)
   ffObject = Column(PickleType)
