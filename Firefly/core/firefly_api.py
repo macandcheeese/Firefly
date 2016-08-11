@@ -333,12 +333,16 @@ def send_command(command):
   Returns:
       Boolean: Command Successful
   """
+  global ffZwave
   logging.info('send_command ' + str(command))
 
   result = {'success':False, 'messsage':'Unknown Error.'}
 
   if command.routine:
     result = send_routine_command(command)
+
+  if command.deviceID == ffZwave.name:
+    ffZwave.sendCommand(command)
 
   else:
     try:
@@ -461,7 +465,7 @@ def send_app_command(command):
 
 
 #################################################
-#       COMMAND FUNCTIONS
+#       END COMMAND FUNCTIONS
 #################################################
 
 
