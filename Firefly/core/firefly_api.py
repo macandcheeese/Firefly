@@ -375,7 +375,7 @@ def send_routine_command(command):
   if routineCount > 1:
     logging.critical('Too many matching routines')
     return {'success':False, 'message':'Too many matching routines'}
-  else if routineCount < 1:
+  elif routineCount < 1:
     logging.critical('Routine not found')
     return {'success':False, 'message':'Routine not found'}
 
@@ -408,7 +408,7 @@ def send_device_command(command):
   if deviceCount > 1:
     logging.critical('Too many matching devices.')
     return {'success':False, 'message':'Too many matching devices'}
-  else if deviceCount < 1:
+  elif deviceCount < 1:
     logging.critical('Device not found')
     return {'success':False, 'message':'Device not found'}
 
@@ -442,7 +442,7 @@ def send_app_command(command):
   if appCount > 1:
     logging.critical('Too many matching apps.')
     return {'success':False, 'message':'Too many matching apps'}
-  else if appCount < 1:
+  elif appCount < 1:
     logging.critical('App not found')
     return {'success':False, 'message':'App not found'}
 
