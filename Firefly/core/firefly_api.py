@@ -354,7 +354,7 @@ def send_command(command):
       logging.critical('ERROR: Error quring app database in send_command')
 
   # TODO: Convert datalog to SQLite
-  data_log(command.log, message=message, logType='command')
+  data_log(command.log, message=result.get('message'), logType='command')
   return result.get('success')
 
 
