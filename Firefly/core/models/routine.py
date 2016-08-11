@@ -2,7 +2,7 @@
 # @Author: Zachary Priddy
 # @Date:   2016-04-11 09:54:21
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-08-10 22:07:23
+# @Last Modified time: 2016-08-10 23:32:35
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -146,11 +146,11 @@ class Routine(object):
             endM = int(endM)
             if startH <= endH:
               if not (now >= time(startH,startM) and now <= time(endH,endM)):
-                logging.critical("Not in time range to run routine")
+                logging.info("Not in time range to run routine")
                 return
             else:
               if not (now >= time(startH,startM) or now <= time(endH,endM)):
-                logging.critical("Not in time range to run routine")
+                logging.info("Not in time range to run routine")
                 return
 
         if self._no_run_time_ranges:
@@ -161,14 +161,14 @@ class Routine(object):
             endH, endM = timeRange.get('end_time').split(':')
             endH = int(endH)
             endM = int(endM)
-            logging.critical(str(startH) + ' ' + str(endH))
+            logging.info(str(startH) + ' ' + str(endH))
             if startH <= endH:
               if now >= time(startH,startM) and now <= time(endH,endM):
                 logging.critical("In time range to not run routine")
                 return
             else:
               if now >= time(startH,startM) or now <= time(endH,endM):
-                logging.critical("In time range to not run routine")
+                logging.info("In time range to not run routine")
                 return
 
 

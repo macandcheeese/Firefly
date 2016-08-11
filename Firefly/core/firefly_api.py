@@ -593,7 +593,7 @@ def APIViewsRoutine(request):
     returnData[rID]['id'] = rID
     returnData[rID]['icon'] = r.get('icon')
 
-  logging.critical(str(returnData))
+  logging.info(str(returnData))
   return json.dumps(returnData, sort_keys=True)
 
 
@@ -671,8 +671,6 @@ def ifttt_switch(request):
     return False
   state = request.get('state')
   close_matches = difflib.get_close_matches(device, device_list.keys())
-  logging.critical(device_list)
-  logging.critical(close_matches)
   if len(close_matches) < 1:
     get_device_list()
     close_matches = difflib.get_close_matches(device, device_list.keys())
