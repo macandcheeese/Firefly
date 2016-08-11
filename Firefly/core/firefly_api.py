@@ -95,7 +95,6 @@ init_db()
 
 # TODO: Finish changing all old Device DB actions over to SQLite
 
-
 @app.route('/reinstall_devices')
 def web_reinstall_devices(request):
   return reinstall_devices()
@@ -103,12 +102,21 @@ def web_reinstall_devices(request):
 # TODO: This may be better in database module
 
 def reinstall_devices():
+  """
+  Delete all devices from the database and reinstall them
+  """
   try:
     deleted = ff_db.query(DeviceDB).delete()
     logging.critical(str(deleted) + ' Devices Deleted')
   except Exception as err:
     return "Error deleting devices. See log for details. ERROR MESSAGE: " + str(err)
 
+  return install_devices()
+
+def install_devices():
+  """
+  Installs devices using config file in json format
+  """
   try:
     with open('config/devices.json') as devices:
       allDevices = json.load(devices)
@@ -128,26 +136,49 @@ def reinstall_devices():
   return "Installation Successful."
 
 def install_child_device(deviceID, ffObject, config={}, status={}):
-  '''
-  This installes a child device into the device database
-  '''
+  """
+  This installs a child device into the device database
+  """
   logging.debug("Installing Child Device")
   newDevice = DeviceDB(ff_id=deviceID, ffObject=ffObject, config=config, last_command_source='Device Installer', status=status)
   ff_db.add(newDevice)
   ff_db.commit()
 
 
-# OLD install_child_device
-'''
-def install_child_device(deviceID, ffObject, config={}, status={}):
-  logging.debug("Installing Child Device")
-  d = {}
-  d['id'] = deviceID
-  d['ffObject'] = pickle.dumps(ffObject)
-  d['config'] = config
-  d['status'] = status
-  deviceDB.insert(d)
-'''
+@app.route('reinstall_routines')
+def web_reinstall_routines(request):
+  return reinstall_routines()
+
+
+def reinstall_routines():
+  """
+  Delete all routines from database and reinstall them from config file.
+  """
+  try:
+    deleted = ff_db.query(RoutineDB).delete()
+    logging.critical(str(deleted) + ' Routines Deleted')
+  except Exception as err:
+    return 'Error deleting routines. See log for details. ERROR MESSAGE ' + str(err)
+
+  return install_routines()
+
+def install_routines():
+  """
+  Installs routines from config file
+  """
+  from core.models import routine
+  try:
+    with open('config/routine.json') as routines:
+      routines = json.load(routines, object_pairs_hook=OrderedDict)
+      for r in routines.get('routines'):
+        rObj = routine.Routine(json.dumps(r))
+        newRoutine = RoutineDB(ffObject=rObj, listen=rObj.listen ff_id=rObj.name)
+        ff_db.add(newRoutine)
+        ff_db.commit()
+  except Exception as err:
+    return "Error installing routines. See log for details. ERROR MESSAGE: " + str(err)
+
+  return "Installation Successful."
 
 
 #####################################################
@@ -234,21 +265,6 @@ def api_control(request):
   result = ffCommand(device,command)
   return json.dumps({'action':'recieved'})
 
-@app.route('/readConfig')
-def ff_read_device_config(request):
-  from core.models import routine
-  
-
-  #Remove Existing Routines
-  routineDB.remove({})
-  with open('config/routine.json') as routines:
-    testRoutines = json.load(routines, object_pairs_hook=OrderedDict)
-    for r in testRoutines.get('routines'):
-      rObj = routine.Routine(json.dumps(r))
-      rObjBin = pickle.dumps(rObj)
-      r['listen'] = rObj.listen
-      r['ffObject'] = rObjBin
-      routineDB.insert(r)
 
 @app.route('/installApps')
 def ff_instal_apps(request):
@@ -276,37 +292,8 @@ def ff_instal_apps(request):
             appsDB.insert(a)
 
 
-@app.route('/testRequest')
-def send_test_request(request):
-  ffEvent('location',{'time':'sunset'})
-  return 'EVENT SENT'
-
-@app.route('/testInstall')
-def test_install(request):
-  global ffZwave
-  deviceDB.remove({})
-  with open('config/devices.json') as devices:
-    allDevices = json.load(devices)
-    for name, device in allDevices.iteritems():
-      if device.get('module') != "ffZwave":
-        package_full_path = device.get('type') + 's.' + device.get('package') + '.' + device.get('module')
-        package = __import__(package_full_path, globals={}, locals={}, fromlist=[device.get('package')], level=-1)
-        reload(modules[package_full_path])
-        dObj = package.Device(device.get('id'), device)
-        d = {}
-        d['id'] = device.get('id')
-        d['ffObject'] = pickle.dumps(dObj)
-        d['config'] = device
-        d['status'] = {}
-        deviceDB.insert(d)
-
-        myDevice = DeviceDB(ff_id=device.get('id'), ffObject=dObj, config=device, last_command_source='', status={})
-        ff_db.add(myDevice)
-        ff_db.commit()
 
 
-
-      
 
 def send_event(event):
   logging.info('send_event: ' + str(event))
@@ -330,43 +317,157 @@ def send_event(event):
   
   data_log(event.log, logType='event')
 
+
+
+#################################################
+#       COMMAND FUNCTIONS
+#################################################
+
 def send_command(command):
-  global ffZwave
+  """ 
+  Send command to all devices.
+  
+  Args:
+      command (ff_command): Command from core.models.command
+  
+  Returns:
+      Boolean: Command Successful
+  """
   logging.debug('send_command ' + str(command))
 
-  sucess = False
-  message = None
+  result = {'success':False, 'messsage':'Unknown Error.'}
 
   if command.routine:
-    routine = routineDB.find_one({'id':command.deviceID})
-    if routine:
-      s = pickle.loads(routine.get('ffObject'))
-      s.executeRoutine(force=command.force)
-      sucess = True
+    result = send_routine_command(command)
 
-  if command.deviceID == ffZwave.name:
-    ffZwave.sendCommand(command)
+  else:
+    try:
+      if ff_db.query(DeviceDB).filter_by(ff_id=command.deviceID).count() != 0:
+        result = send_device_command(command)
+    except:
+      logging.critical('ERROR: Error quring device database in send_command')
 
-  for d in deviceDB.find({'id':command.deviceID}):
-    s = pickle.loads(d.get('ffObject'))
-    s.sendCommand(command)
-    d = pickle.dumps(s)
-    deviceDB.update_one({'id':command.deviceID},{'$set': {'ffObject':d}, '$currentDate': {'lastModified': True}})
-    sucess = True
+    try:
+      if ff_db.query(AppDB).filter_by(ff_id=command.deviceID).count() != 0:
+        result = send_app_command(command)
+    except:
+      logging.critical('ERROR: Error quring app database in send_command')
 
-  for a in appsDB.find({'id':command.deviceID}):
-    app = pickle.loads(a.get('ffObject'))
-    app.sendCommand(command)
-    appObj = pickle.dumps(app)
-    appsDB.update_one({'id':app.id},{'$set': {'ffObject':appObj}, '$currentDate': {'lastModified': True}})
-    sucess = True
-
-  if not sucess:
-    message = 'Device not found'
+  # TODO: Convert datalog to SQLite
   data_log(command.log, message=message, logType='command')
-  return sucess
+  return result.get('success')
 
-  # MAYBE ALSO SEND TO APPS 
+
+def send_routine_command(command):
+  """
+  Send command to execute routine.
+  
+  Args:
+      command (ff_command): Command from core.models.command
+  
+  Returns:
+      Dict: {success, message}
+  """
+  routine = None
+
+  # Check for routine and try to confirm that there is only one matching routine.
+  routineCount = ff_db.query(RoutineDB).filter_by(ff_id=command.deviceID).count()
+  if routineCount > 1:
+    logging.critical('Too many matching routines')
+    return {'success':False, 'message':'Too many matching routines'}
+  else if routineCount < 1:
+    logging.critical('Routine not found')
+    return {'success':False, 'message':'Routine not found'}
+
+  routine = ff_db.query(RoutineDB).filter_by(ff_id=command.deviceID).one().ffObject
+
+  # Execute routine.
+  try:
+    routine.executeRoutine(force=command.force)
+    # TODO: Check if execution was successful before returing that it was.
+    return {'success':True, 'message':'Routine executed'}
+  
+  except:
+    logging.critical('Unknown Error Executing Routine')
+    return {'success':False, 'message':'Unknown Error Executing Routine'}
+
+def send_device_command(command):
+  """
+  Send command to device.
+  
+  Args:
+      command (ff_command): Command from core.models.command
+  
+  Returns:
+      Dict: {success, message}
+  """
+  device = None
+
+  # Check for device and confirm that there is only one matching.
+  deviceCount = ff_db.query(DeviceDB).filter_by(ff_id=command.deviceID).count()
+  if deviceCount > 1:
+    logging.critical('Too many matching devices.')
+    return {'success':False, 'message':'Too many matching devices'}
+  else if deviceCount < 1:
+    logging.critical('Device not found')
+    return {'success':False, 'message':'Device not found'}
+
+  deviceObject = ff_db.query(DeviceDB).filter_by(ff_id=command.deviceID).one()
+  deviceID = deviceObject.id
+  device = deviceObject.ffObject
+  # TODO: add device response if command was successful.
+  device.sendCommand(command)
+
+  # Update the record in the database.
+  ff_db.query(DeviceDB).filter_by(id=deviceID).one().ffObject = device
+  ff_db.commit()
+
+  return {'success':True, 'message':'Command sent to device.'}
+
+
+def send_app_command(command):
+  """
+  Send command to app.
+  
+  Args:
+      command (ff_command): Command from core.models.command
+  
+  Returns:
+      Dict: {success, message}
+  """
+  app = None
+
+  # Check for app and confirm that there is only one matching.
+  appCount = ff_db.query(AppDB).filter_by(ff_id=command.deviceID).count()
+  if appCount > 1:
+    logging.critical('Too many matching apps.')
+    return {'success':False, 'message':'Too many matching apps'}
+  else if appCount < 1:
+    logging.critical('App not found')
+    return {'success':False, 'message':'App not found'}
+
+  appObject = ff_db.query(AppDB).filter_by(ff_id=command.deviceID).one()
+  appID = appObject.id
+  app = app.ffObject
+
+  # TODO: add app response if command was successful.
+  app.sendCommand(command)
+
+  # Update the record in the database.
+  ff_db.query(AppDB).filter_by(id=appID).one().ffObject = app
+  ff_db.commit()
+
+  return {'success':True, 'message':'Command sent to app.'}
+
+
+#################################################
+#       COMMAND FUNCTIONS
+#################################################
+
+
+
+
+
 
 def send_request(request):
   logging.debug('send_request' + str(request))
