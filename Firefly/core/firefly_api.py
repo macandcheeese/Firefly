@@ -145,7 +145,7 @@ def install_child_device(deviceID, ffObject, config={}, status={}):
   ff_db.commit()
 
 
-@app.route('reinstall_routines')
+@app.route('/reinstall_routines')
 def web_reinstall_routines(request):
   return reinstall_routines()
 
