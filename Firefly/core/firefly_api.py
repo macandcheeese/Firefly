@@ -333,7 +333,7 @@ def send_command(command):
   Returns:
       Boolean: Command Successful
   """
-  logging.debug('send_command ' + str(command))
+  logging.info('send_command ' + str(command))
 
   result = {'success':False, 'messsage':'Unknown Error.'}
 
