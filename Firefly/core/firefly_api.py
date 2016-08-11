@@ -349,8 +349,8 @@ def send_command(command):
     try:
       if ff_db.query(DeviceDB).filter_by(ff_id=command.deviceID).count() != 0:
         result = send_device_command(command)
-    except:
-      logging.critical('ERROR: Error quring device database in send_command')
+    except Exception as err:
+      logging.critical('ERROR: Error quring device database in send_command. Message: ' + err)
 
     try:
       if ff_db.query(AppDB).filter_by(ff_id=command.deviceID).count() != 0:
