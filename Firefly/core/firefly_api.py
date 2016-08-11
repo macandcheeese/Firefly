@@ -172,7 +172,7 @@ def install_routines():
       routines = json.load(routines, object_pairs_hook=OrderedDict)
       for r in routines.get('routines'):
         rObj = routine.Routine(json.dumps(r))
-        newRoutine = RoutineDB(ffObject=rObj, listen=rObj.listen ff_id=rObj.name)
+        newRoutine = RoutineDB(ffObject=rObj, listen=rObj.listen, ff_id=rObj.name)
         ff_db.add(newRoutine)
         ff_db.commit()
   except Exception as err:
