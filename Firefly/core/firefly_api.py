@@ -341,8 +341,9 @@ def send_command(command):
   if command.routine:
     result = send_routine_command(command)
 
-  if command.deviceID == ffZwave.name:
+  elif command.deviceID == ffZwave.name:
     ffZwave.sendCommand(command)
+    result = {'success':True, 'message':'Command sent to zwave device.'}
 
   else:
     try:
