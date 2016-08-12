@@ -2,7 +2,7 @@
 # @Author: Zachary Priddy
 # @Date:   2016-08-09 22:21:17
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-08-11 21:39:24
+# @Last Modified time: 2016-08-11 21:40:07
 
 
 #####################################################
@@ -31,7 +31,7 @@ class DeviceDB(Base):
   config = Column(PickleType)
   status = Column(PickleType)
 
-  last_command_source = Column(String)
+  last_command_source = Column(String(64))
 
   created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False, server_default=text('0'))
   updated_on = Column(TIMESTAMP, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow, server_default=text('0'))
