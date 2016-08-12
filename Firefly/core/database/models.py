@@ -2,7 +2,7 @@
 # @Author: Zachary Priddy
 # @Date:   2016-08-09 22:21:17
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-08-11 21:38:43
+# @Last Modified time: 2016-08-11 21:39:24
 
 
 #####################################################
@@ -26,7 +26,7 @@ class DeviceDB(Base):
   __tablename__ = 'devices'
 
   id = Column(Integer, primary_key=True)
-  ff_id = Column(String)
+  ff_id = Column(String(32))
   ffObject = Column(PickleType)
   config = Column(PickleType)
   status = Column(PickleType)
@@ -55,8 +55,8 @@ class AppDB(Base):
   __tablename__ = 'apps'
 
   id = Column(Integer, primary_key=True)
-  ff_id = Column(String)
-  name = Column(String)
+  ff_id = Column(String(32))
+  name = Column(String(32))
   listen = Column(PickleType)
   ffObject = Column(PickleType)
 
