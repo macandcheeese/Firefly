@@ -121,6 +121,8 @@ def install_devices():
   """
   Installs devices using config file in json format
   """
+  ff_db_session = get_session()
+  
   try:
     with open('config/devices.json') as devices:
       allDevices = json.load(devices)
