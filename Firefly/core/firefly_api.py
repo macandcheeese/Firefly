@@ -133,7 +133,7 @@ def install_devices():
           package = __import__(package_full_path, globals={}, locals={}, fromlist=[device.get('package')], level=-1)
           reload(modules[package_full_path])
           dObj = package.Device(device.get('id'), device)
-          newDevice = DeviceDB(ff_id=device.get('id'), ffObject=dObj, config=device, last_command_source='Device Installer', status={})
+          newDevice = DeviceDB(ff_id=device.get('id'), ffObject=dObj, config=device, updated_by='Device Installer', status={})
           ff_db_session.add(newDevice)
           ff_db_session.commit()
   except Exception as err:
@@ -149,7 +149,7 @@ def install_child_device(deviceID, ffObject, config={}, status={}):
   """
   ff_db_session = get_session()
   logging.debug("Installing Child Device")
-  newDevice = DeviceDB(ff_id=deviceID, ffObject=ffObject, config=config, last_command_source='Device Installer', status=status)
+  newDevice = DeviceDB(ff_id=deviceID, ffObject=ffObject, config=config, updated_by='Device Installer', status=status)
   ff_db_session.add(newDevice)
   ff_db_session.commit()
   ff_db_session.close()
