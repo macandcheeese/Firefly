@@ -2,7 +2,7 @@
 # @Author: Zachary Priddy
 # @Date:   2016-08-09 22:21:17
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-08-11 21:40:07
+# @Last Modified time: 2016-08-13 21:56:57
 
 
 #####################################################
@@ -16,6 +16,7 @@ import sqlalchemy
 from datetime import datetime
 
 from sqlalchemy import *
+from sqlalchemy import DateTime
 
 from core.database.database import Base
 
@@ -34,7 +35,7 @@ class DeviceDB(Base):
   last_command_source = Column(String(64))
 
   created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False, server_default=text('0'))
-  updated_on = Column(TIMESTAMP, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow, server_default=text('0'))
+  updated_on = Column(DateTime(), default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow, server_default=text('0'))
 
 
 # TODO: Create a new table of listen that shows the relationship between apps/routines and devices
