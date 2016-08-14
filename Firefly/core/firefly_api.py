@@ -459,6 +459,7 @@ def send_device_command(command):
   db_row = ff_db_session.query(DeviceDB).filter_by(id=deviceID).one()
   db_row.ffObject = device
   db_row.updated_on = datetime.utcnow()
+  db_row.updated_by = command.source if command.source is not None else "UNKNOWN"
   
   ff_db_session.commit()
   ff_db_session.close()

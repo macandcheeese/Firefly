@@ -2,15 +2,16 @@
 # @Author: Zachary Priddy
 # @Date:   2016-04-11 21:48:42
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-05-22 14:17:24
+# @Last Modified time: 2016-08-13 22:06:51
 from core.models import event
 from core.models.command import Command as ffCommand
 
-from core.scheduler import Scheduler
 import ffHue_bridge as bridge
-import ffHue_light as lightDevice
 import ffHue_group as groupDevice
+import ffHue_light as lightDevice
 import logging
+
+from core.scheduler import Scheduler
 
 metadata = {
   'title' : 'Pushover Notifications',
@@ -114,9 +115,9 @@ class Device(object):
     rawLightData = self._hueBridge.get_lights()
     for light, lightData in rawLightData.iteritems():
       deviceID = 'hue-light-' + str(light)
-      updateEvent =ffCommand(deviceID,{'update':lightData})
+      updateEvent =ffCommand(deviceID,{'update':lightData},source="Hue hub refresh.")
 
     rawGroupData = self._hueBridge.get_groups()
     for group, groupData in rawGroupData.iteritems():
       deviceID = 'hue-group-' + str(group)
-      updateEvent = ffCommand(deviceID,{'update':groupData})
+      updateEvent = ffCommand(deviceID,{'update':groupData},source="Hue hub refresh.")
