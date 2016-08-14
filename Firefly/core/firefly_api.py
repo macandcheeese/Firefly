@@ -46,8 +46,6 @@ from core.models.event import Event as ffEvent
 from core.models.request import Request as ffRequest
 from core.scheduler import Scheduler
 
-from datetime import utcnow
-
 app = Klein()
 core_settings = core_settings.Settings()
 
@@ -460,7 +458,7 @@ def send_device_command(command):
   # Update the record in the database.
   db_row = ff_db_session.query(DeviceDB).filter_by(id=deviceID).one()
   db_row.ffObject = device
-  db_row.updated_on = utcnow()
+  db_row.updated_on = datetime.utcnow()
   
   ff_db_session.commit()
   ff_db_session.close()
