@@ -46,7 +46,7 @@ from core.models.event import Event as ffEvent
 from core.models.request import Request as ffRequest
 from core.scheduler import Scheduler
 
-from datetime.datetime import utcnow
+from datetime import utcnow
 
 app = Klein()
 core_settings = core_settings.Settings()
