@@ -196,10 +196,55 @@ def install_routines():
   ff_db_session.close()
   return "Installation Successful."
 
+@app.route('/reinstall_apps')
+def web_reinstall_apps(request):
+  return reinstall_apps()
+
 def reinstall_apps():
   """
   Delete all apps from database and reinstall them from config file.
   """
+  ff_db_session = get_session()
+  try:
+    deleted = ff_db_session.query(AppDB).delete()
+    logging.critical(str(deleted) + ' Apps Deleted')
+  except Exception as err:
+    ff_db_session.rollback()
+    return 'Error deleting apps. See log for details. ERROR MESSAGE ' + str(err)
+
+  ff_db_session.close()
+  return install_apps()
+
+def install_apps():
+  """
+  Installs apps from config file.
+  """
+  ff_db_session = get_session()
+  
+  try:
+    with open('config/apps.json') as coreAppConfig:
+      appList = json.load(coreAppConfig)
+      for packageName, module in appList.iteritems():
+        for moduleName in module:
+          package_full_path = 'apps.' + str(packageName) + '.' + str(moduleName)
+          app_package_config = 'config/app_config/' + str(packageName) + '/config.json'
+          logging.critical(app_package_config)
+          with open(str(app_package_config)) as app_package_config_file:
+            app_package_config_data = json.load(app_package_config_file, object_pairs_hook=OrderedDict).get(moduleName) #json.load(app_package_config_file).get(moduleName)
+            logging.critical(app_package_config_data)
+            package = __import__(package_full_path, globals={}, locals={}, fromlist=[str(packageName)], level=-1)
+            reload(modules[package_full_path])
+            for install in app_package_config_data.get('installs'):
+              aObj = package.App(install)
+              newApp = AppDB(ffObject=aObj,ff_id=aObj.id, name=install.get('name'), listen=aObj.listen, updated_by="App Installer")
+              ff_db_session.add(newApp)
+              ff_db_session.commit()
+  except Exception as err:
+    ff_db_session.rollback()
+    return "Error installing apps. See log for details. ERROR MESSAGE: " + str(err)
+
+  ff_db_session.close()
+  return "Installation Successful."
 
 
 #####################################################
