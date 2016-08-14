@@ -2,7 +2,7 @@
 # @Author: Zachary Priddy
 # @Date:   2016-08-09 22:23:13
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-08-13 21:05:29
+# @Last Modified time: 2016-08-13 21:53:21
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -15,8 +15,16 @@ engine = create_engine('mysql://firefly:ffsql@localhost/firefly',  poolclass=Sta
 Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 db_session = Session()
 
-Base = declarative_base()
+db = SQLAlchemy(app)
+
+#Base = declarative_base()
 #Base.query = db_session.query_property()
+
+class Base(db):
+  __abstract__ = True
+
+  created_on = db.Column(db.DateTime, default=db.func.now())
+  updated_on = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
 
 def init_db():
   from core.database.models import *

@@ -39,6 +39,7 @@ import templates
 
 from core.models import core_settings, event
 
+from core.database.database import get_session
 from core.location import Location
 from core.models.command import Command as ffCommand
 from core.models.event import Event as ffEvent
@@ -105,8 +106,11 @@ def reinstall_devices():
   """
   Delete all devices from the database and reinstall them
   """
+
+  ff_db_session = get_session()
+
   try:
-    deleted = ff_db.query(DeviceDB).delete()
+    deleted = ff_db_session.query(DeviceDB).delete()
     logging.critical(str(deleted) + ' Devices Deleted')
   except Exception as err:
     return "Error deleting devices. See log for details. ERROR MESSAGE: " + str(err)
@@ -128,21 +132,25 @@ def install_devices():
           reload(modules[package_full_path])
           dObj = package.Device(device.get('id'), device)
           newDevice = DeviceDB(ff_id=device.get('id'), ffObject=dObj, config=device, last_command_source='Device Installer', status={})
-          ff_db.add(newDevice)
-          ff_db.commit()
+          ff_db_session.add(newDevice)
+          ff_db_session.commit()
   except Exception as err:
+    ff_db_session.rollback()
     return "Error installing devices. See log for details. ERROR MESSAGE: " + str(err)
 
+  ff_db_session.close()
   return "Installation Successful."
 
 def install_child_device(deviceID, ffObject, config={}, status={}):
   """
   This installs a child device into the device database
   """
+  ff_db_session = get_session()
   logging.debug("Installing Child Device")
   newDevice = DeviceDB(ff_id=deviceID, ffObject=ffObject, config=config, last_command_source='Device Installer', status=status)
-  ff_db.add(newDevice)
-  ff_db.commit()
+  ff_db_session.add(newDevice)
+  ff_db_session.commit()
+  ff_db_session.close()
 
 
 @app.route('/reinstall_routines')
@@ -154,12 +162,15 @@ def reinstall_routines():
   """
   Delete all routines from database and reinstall them from config file.
   """
+  ff_db_session = get_session()
   try:
-    deleted = ff_db.query(RoutineDB).delete()
+    deleted = ff_db_session.query(RoutineDB).delete()
     logging.critical(str(deleted) + ' Routines Deleted')
   except Exception as err:
+    ff_db_session.rollback()
     return 'Error deleting routines. See log for details. ERROR MESSAGE ' + str(err)
 
+  ff_db_session.close()
   return install_routines()
 
 def install_routines():
@@ -167,18 +178,26 @@ def install_routines():
   Installs routines from config file
   """
   from core.models import routine
+  ff_db_session = get_session()
   try:
     with open('config/routine.json') as routines:
       routines = json.load(routines, object_pairs_hook=OrderedDict)
       for r in routines.get('routines'):
         rObj = routine.Routine(json.dumps(r))
         newRoutine = RoutineDB(ffObject=rObj, listen=rObj.listen, ff_id=rObj.name)
-        ff_db.add(newRoutine)
-        ff_db.commit()
+        ff_db_session.add(newRoutine)
+        ff_db_session.commit()
   except Exception as err:
+    ff_db_session.rollback()
     return "Error installing routines. See log for details. ERROR MESSAGE: " + str(err)
 
+  ff_db_session.close()
   return "Installation Successful."
+
+def reinstall_apps():
+  """
+  Delete all apps from database and reinstall them from config file.
+  """
 
 
 #####################################################
@@ -335,7 +354,7 @@ def send_command(command):
   """
   global ffZwave
 
-  from core.database.database import get_session
+  
   ff_db_session = get_session()
 
   logging.info('send_command ' + str(command))
@@ -379,7 +398,6 @@ def send_routine_command(command):
       Dict: {success, message}
   """
   
-  from core.database.database import get_session
   ff_db_session = get_session()
 
   routine = None
@@ -417,8 +435,7 @@ def send_device_command(command):
   Returns:
       Dict: {success, message}
   """
-
-  from core.database.database import get_session
+  
   ff_db_session = get_session()
 
   device = None
@@ -456,8 +473,7 @@ def send_app_command(command):
   Returns:
       Dict: {success, message}
   """
-
-  from core.database.database import get_session
+  
   ff_db_session = get_session()
 
   app = None
@@ -489,8 +505,6 @@ def send_app_command(command):
 #################################################
 #       END COMMAND FUNCTIONS
 #################################################
-
-
 
 
 
