@@ -378,10 +378,14 @@ def send_routine_command(command):
   Returns:
       Dict: {success, message}
   """
+  
+  from core.database.database import get_session
+  ff_db_session = get_session()
+
   routine = None
 
   # Check for routine and try to confirm that there is only one matching routine.
-  routineCount = ff_db.query(RoutineDB).filter_by(ff_id=command.deviceID).count()
+  routineCount = ff_db_session.query(RoutineDB).filter_by(ff_id=command.deviceID).count()
   if routineCount > 1:
     logging.critical('Too many matching routines')
     return {'success':False, 'message':'Too many matching routines'}
@@ -389,7 +393,9 @@ def send_routine_command(command):
     logging.critical('Routine not found')
     return {'success':False, 'message':'Routine not found'}
 
-  routine = ff_db.query(RoutineDB).filter_by(ff_id=command.deviceID).one().ffObject
+  routine = ff_db_session.query(RoutineDB).filter_by(ff_id=command.deviceID).one().ffObject
+
+  ff_db_session.close()
 
   # Execute routine.
   try:
@@ -411,8 +417,10 @@ def send_device_command(command):
   Returns:
       Dict: {success, message}
   """
+
   from core.database.database import get_session
   ff_db_session = get_session()
+
   device = None
 
   # Check for device and confirm that there is only one matching.
@@ -448,10 +456,14 @@ def send_app_command(command):
   Returns:
       Dict: {success, message}
   """
+
+  from core.database.database import get_session
+  ff_db_session = get_session()
+
   app = None
 
   # Check for app and confirm that there is only one matching.
-  appCount = ff_db.query(AppDB).filter_by(ff_id=command.deviceID).count()
+  appCount = ff_db_session.query(AppDB).filter_by(ff_id=command.deviceID).count()
   if appCount > 1:
     logging.critical('Too many matching apps.')
     return {'success':False, 'message':'Too many matching apps'}
@@ -459,7 +471,7 @@ def send_app_command(command):
     logging.critical('App not found')
     return {'success':False, 'message':'App not found'}
 
-  appObject = ff_db.query(AppDB).filter_by(ff_id=command.deviceID).one()
+  appObject = ff_db_session.query(AppDB).filter_by(ff_id=command.deviceID).one()
   appID = appObject.id
   app = app.ffObject
 
@@ -467,8 +479,9 @@ def send_app_command(command):
   app.sendCommand(command)
 
   # Update the record in the database.
-  ff_db.query(AppDB).filter_by(id=appID).one().ffObject = app
-  ff_db.commit()
+  ff_db_session.query(AppDB).filter_by(id=appID).one().ffObject = app
+  ff_db_session.commit()
+  ff_db_session.close()
 
   return {'success':True, 'message':'Command sent to app.'}
 
