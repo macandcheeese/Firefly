@@ -406,10 +406,12 @@ def send_device_command(command):
   Returns:
       Dict: {success, message}
   """
+  from core.database.database import get_session
+  ff_db_session = get_session()
   device = None
 
   # Check for device and confirm that there is only one matching.
-  deviceCount = ff_db.query(DeviceDB).filter_by(ff_id=command.deviceID).count()
+  deviceCount = ff_db_session.query(DeviceDB).filter_by(ff_id=command.deviceID).count()
   if deviceCount > 1:
     logging.critical('Too many matching devices.')
     return {'success':False, 'message':'Too many matching devices'}
@@ -417,15 +419,16 @@ def send_device_command(command):
     logging.critical('Device not found')
     return {'success':False, 'message':'Device not found'}
 
-  deviceObject = ff_db.query(DeviceDB).filter_by(ff_id=command.deviceID).one()
+  deviceObject = ff_db_session.query(DeviceDB).filter_by(ff_id=command.deviceID).one()
   deviceID = deviceObject.id
   device = deviceObject.ffObject
   # TODO: add device response if command was successful.
   device.sendCommand(command)
 
   # Update the record in the database.
-  ff_db.query(DeviceDB).filter_by(id=deviceID).one().ffObject = device
-  ff_db.commit()
+  ff_db_session.query(DeviceDB).filter_by(id=deviceID).one().ffObject = device
+  ff_db_session.commit()
+  ff_db_session.close()
 
   return {'success':True, 'message':'Command sent to device.'}
 
