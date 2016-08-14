@@ -334,6 +334,10 @@ def send_command(command):
       Boolean: Command Successful
   """
   global ffZwave
+
+  from core.database.database import get_session
+  ff_db_session = get_session()
+
   logging.info('send_command ' + str(command))
 
   result = {'success':False, 'messsage':'Unknown Error.'}
@@ -347,19 +351,20 @@ def send_command(command):
 
   else:
     try:
-      if ff_db.query(DeviceDB).filter_by(ff_id=command.deviceID).count() != 0:
+      if ff_db_session.query(DeviceDB).filter_by(ff_id=command.deviceID).count() != 0:
         result = send_device_command(command)
     except Exception as err:
       logging.critical('ERROR: Error quring device database in send_command. Message: ' + str(err))
 
     try:
-      if ff_db.query(AppDB).filter_by(ff_id=command.deviceID).count() != 0:
+      if ff_db_session.query(AppDB).filter_by(ff_id=command.deviceID).count() != 0:
         result = send_app_command(command)
     except:
       logging.critical('ERROR: Error quring app database in send_command')
 
   # TODO: Convert datalog to SQLite
   data_log(command.log, message=result.get('message'), logType='command')
+  ff_db_session.close()
   return result.get('success')
 
 
