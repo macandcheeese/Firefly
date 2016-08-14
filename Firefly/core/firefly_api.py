@@ -332,34 +332,6 @@ def api_control(request):
   return json.dumps({'action':'recieved'})
 
 
-@app.route('/installApps')
-def ff_instal_apps(request):
-  appsDB.remove({})
-  with open('config/apps.json') as coreAppConfig:
-    appList = json.load(coreAppConfig)
-    for packageName, module in appList.iteritems():
-      for moduleName in module:
-        package_full_path = 'apps.' + str(packageName) + '.' + str(moduleName)
-        app_package_config = 'config/app_config/' + str(packageName) + '/config.json'
-        logging.critical(app_package_config)
-        with open(str(app_package_config)) as app_package_config_file:
-          app_package_config_data = json.load(app_package_config_file, object_pairs_hook=OrderedDict).get(moduleName) #json.load(app_package_config_file).get(moduleName)
-          logging.critical(app_package_config_data)
-          package = __import__(package_full_path, globals={}, locals={}, fromlist=[str(packageName)], level=-1)
-          reload(modules[package_full_path])
-          for install in app_package_config_data.get('installs'):
-            aObj = package.App(install)
-            aObjBin = pickle.dumps(aObj)
-            a = {}
-            a['id'] = aObj.id
-            a['ffObject'] = aObjBin
-            a['name'] = install.get('name')
-            a['listen'] = aObj.listen
-            appsDB.insert(a)
-
-
-
-
 
 def send_event(event):
   logging.info('send_event: ' + str(event))
@@ -616,15 +588,6 @@ def read_settings():
     core_settings.port = newSettings.get('port')
     core_settings.ip_address = str(newSettings.get('ip_address'))
     logging.debug(core_settings)
-
-## THIS WILL REPLACE THE TEST ONE ABOVE
-def insatll_devices():
-  device = {'package':'ffPresence', 'type':'device', 'deviceID':'Zach Presence', 'args':{}}
-  print device
-  package_full_path = device.get('type') + 's.' + device.get('package') + '.' + device.get('package')
-  package = __import__(package_full_path, globals={}, locals={}, fromlist=[device.get('package')], level=-1)
-  reload(package)
-  package.Device(device.get('deviceID'), device)
 
 
 def data_log(event, message=None, logType='unknown'):
@@ -886,12 +849,6 @@ def make_response(output_speech, card_content, output_type="PlainText", card_tit
 #####################################################
 
 
-
-
-
-
-
-
 def get_routines_list():
   global routine_list
   routine_list = []
@@ -908,8 +865,6 @@ def get_device_list(lower=True):
         device_list[d.get('config').get('name').lower()] = d.get('id')
       else:
         device_list[d.get('config').get('name')] = d.get('id')
-
-
 
 
 
