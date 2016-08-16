@@ -2,7 +2,7 @@
 # @Author: Zachary Priddy
 # @Date:   2016-08-09 22:21:17
 # @Last Modified by:   Zachary Priddy
-# @Last Modified time: 2016-08-13 22:21:31
+# @Last Modified time: 2016-08-15 21:09:23
 
 
 #####################################################
@@ -65,6 +65,30 @@ class AppDB(Base):
 
   created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False, server_default=text('0'))
   updated_on = Column(TIMESTAMP, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow, server_default=text('0'))
+
+class EventDB (Base):
+  __tablename__ = 'events'
+
+  id = Column(Integer, primary_key=True)
+  source = Column(String(32))
+  message = Column(String(256))
+
+  created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False, server_default=text('0'))
+  updated_on = Column(TIMESTAMP, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow, server_default=text('0'))
+
+
+class DatalogDB (Base):
+  __tablename__ = 'datalog'
+
+  id = Column(Integer, primary_key=True)
+  source = Column(String(32))
+  message = Column(String(256))
+
+  created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False, server_default=text('0'))
+  updated_on = Column(TIMESTAMP, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow, server_default=text('0'))
+
+
+
   
 
 '''
